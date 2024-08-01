@@ -93,7 +93,7 @@ class DeviceDataPageState extends State<DeviceDataPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Device Data (${device.name})'),
+        title: Text('Storm Watch'),
         backgroundColor: Colors.blue,
       ),
       body: Padding(
