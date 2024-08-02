@@ -21,13 +21,13 @@ class GetStarted extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Image.asset('assets/get-started.png'),
+              Image.asset('assets/images.png'),
               const SizedBox(
                 height: 30,
               ),
               GestureDetector(
                 onTap: () {
-                  Navigator.pushReplacement(context,
+                  Navigator.push(context,
                       MaterialPageRoute(builder: (context) => const Welcome()));
                 },
                 child: Container(

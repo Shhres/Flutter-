@@ -17,12 +17,21 @@ class DeviceDataPageState extends State<DeviceDataPage> {
   List<double> humidityData = [];
   BluetoothCharacteristic? tempCharacteristic;
   BluetoothCharacteristic? humCharacteristic;
+  final ScrollController _tempScrollController = ScrollController();
+  final ScrollController _humScrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     device = widget.device;
     connectToDevice();
+  }
+
+  @override
+  void dispose() {
+    _tempScrollController.dispose();
+    _humScrollController.dispose();
+    super.dispose();
   }
 
   Future<void> connectToDevice() async {
@@ -69,7 +78,9 @@ class DeviceDataPageState extends State<DeviceDataPage> {
 
     setState(() {
       temperatureData.addAll(decodedValues);
+      print('Updated temperature data: $temperatureData');
     });
+    _scrollToBottom(_tempScrollController);
   }
 
   void processHumidityData(List<int> value) {
@@ -86,6 +97,20 @@ class DeviceDataPageState extends State<DeviceDataPage> {
 
     setState(() {
       humidityData.addAll(decodedValues);
+      print('Updated humidity data: $humidityData');
+    });
+    _scrollToBottom(_humScrollController);
+  }
+
+  void _scrollToBottom(ScrollController controller) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (controller.hasClients) {
+        controller.animateTo(
+          controller.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 100),
+          curve: Curves.easeOut,
+        );
+      }
     });
   }
 
@@ -93,52 +118,152 @@ class DeviceDataPageState extends State<DeviceDataPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Storm Watch'),
         backgroundColor: Colors.blue,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            device.disconnect(); // Disconnect from the device
+            Navigator.pop(context); // Navigate back to the previous screen
+          },
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Temperature Data:',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            Expanded(
-              child: ListView.builder(
-                itemCount: temperatureData.length,
-                itemBuilder: (context, index) {
-                  return Card(
-                    elevation: 4,
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    child: ListTile(
-                      leading: const Icon(Icons.thermostat, color: Colors.red),
-                      title: Text(
-                          'Temperature: ${temperatureData[index].toStringAsFixed(1)}°C'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Column(
+                  children: [
+                    const Text(
+                      'Temperature',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  );
-                },
-              ),
+                    Card(
+                      elevation: 4,
+                      margin: const EdgeInsets.symmetric(vertical: 8),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          children: [
+                            const Icon(Icons.thermostat,
+                                color: Colors.red, size: 40),
+                            Text(
+                              temperatureData.isNotEmpty
+                                  ? '${temperatureData.last.toStringAsFixed(1)}°C'
+                                  : '0.0°C',
+                              style: const TextStyle(fontSize: 24),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                Column(
+                  children: [
+                    const Text(
+                      'Humidity',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Card(
+                      elevation: 4,
+                      margin: const EdgeInsets.symmetric(vertical: 8),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          children: [
+                            const Icon(Icons.water_drop,
+                                color: Colors.blue, size: 40),
+                            Text(
+                              humidityData.isNotEmpty
+                                  ? '${humidityData.last.toStringAsFixed(1)}%'
+                                  : '0.0%',
+                              style: const TextStyle(fontSize: 24),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Humidity Data:',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
             Expanded(
-              child: ListView.builder(
-                itemCount: humidityData.length,
-                itemBuilder: (context, index) {
-                  return Card(
-                    elevation: 4,
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    child: ListTile(
-                      leading: const Icon(Icons.water_drop, color: Colors.blue),
-                      title: Text(
-                          'Humidity: ${humidityData[index].toStringAsFixed(1)}%'),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Temperature Data:',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        Expanded(
+                          child: ListView.builder(
+                            controller: _tempScrollController,
+                            itemCount: temperatureData.length,
+                            itemBuilder: (context, index) {
+                              return Card(
+                                elevation: 4,
+                                margin: const EdgeInsets.symmetric(vertical: 8),
+                                child: ListTile(
+                                  leading: const Icon(Icons.thermostat,
+                                      color: Colors.red),
+                                  title: Text(
+                                    'Temperature: ${temperatureData[index].toStringAsFixed(1)}°C',
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                     ),
-                  );
-                },
+                  ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Humidity Data:',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        Expanded(
+                          child: ListView.builder(
+                            controller: _humScrollController,
+                            itemCount: humidityData.length,
+                            itemBuilder: (context, index) {
+                              return Card(
+                                elevation: 4,
+                                margin: const EdgeInsets.symmetric(vertical: 8),
+                                child: ListTile(
+                                  leading: const Icon(Icons.water_drop,
+                                      color: Colors.blue),
+                                  title: Text(
+                                    'Humidity: ${humidityData[index].toStringAsFixed(1)}%',
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
