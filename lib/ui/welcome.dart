@@ -4,7 +4,7 @@ import 'package:flutter_application_1/ui/device_data_page.dart';
 import 'package:flutter_blue/flutter_blue.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'device_list_page.dart'; // Import the new page
+import 'device_list_page.dart';
 
 class Welcome extends StatefulWidget {
   const Welcome({super.key});
@@ -178,7 +178,7 @@ class _WelcomeState extends State<Welcome> {
         body: Stack(
           children: [
             Opacity(
-              opacity: 0.2, // Set opacity of the image to 10%
+              opacity: 0.1, // Set opacity of the image to 10%
               child: Center(
                 child: Image.asset(
                   'assets/bluetooth.png', // Path to your image
