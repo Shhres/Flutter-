@@ -74,10 +74,12 @@ class DeviceDataPageState extends State<DeviceDataPage> {
         .map((e) => e.trim())
         .toList();
     List<double> decodedValues =
-        values.map((e) => double.tryParse(e) ?? 0.0).toList();
+        values.map((e) => double.tryParse(e) ?? double.nan).toList();
 
     setState(() {
-      temperatureData.addAll(decodedValues);
+      if (decodedValues.isNotEmpty && !decodedValues.contains(double.nan)) {
+        temperatureData.addAll(decodedValues);
+      }
       print('Updated temperature data: $temperatureData');
     });
     _scrollToBottom(_tempScrollController);
@@ -93,10 +95,12 @@ class DeviceDataPageState extends State<DeviceDataPage> {
         .map((e) => e.trim())
         .toList();
     List<double> decodedValues =
-        values.map((e) => double.tryParse(e) ?? 0.0).toList();
+        values.map((e) => double.tryParse(e) ?? double.nan).toList();
 
     setState(() {
-      humidityData.addAll(decodedValues);
+      if (decodedValues.isNotEmpty && !decodedValues.contains(double.nan)) {
+        humidityData.addAll(decodedValues);
+      }
       print('Updated humidity data: $humidityData');
     });
     _scrollToBottom(_humScrollController);
@@ -156,7 +160,7 @@ class DeviceDataPageState extends State<DeviceDataPage> {
                             Text(
                               temperatureData.isNotEmpty
                                   ? '${temperatureData.last.toStringAsFixed(1)}°C'
-                                  : '0.0°C',
+                                  : '--°C',
                               style: const TextStyle(fontSize: 24),
                             ),
                           ],
@@ -186,7 +190,7 @@ class DeviceDataPageState extends State<DeviceDataPage> {
                             Text(
                               humidityData.isNotEmpty
                                   ? '${humidityData.last.toStringAsFixed(1)}%'
-                                  : '0.0%',
+                                  : '--%',
                               style: const TextStyle(fontSize: 24),
                             ),
                           ],
